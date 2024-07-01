@@ -82,5 +82,6 @@ Let's examine possible bypasses for outlined limitations. One way or another I'v
 
 
 == Links
-This entry inspired by entry link:https://github.com/binarygolf/BGGP/issues/54[#54] (8-byte Windows Batch), by link:https://github.com/peterferrie[peterferrie].
-Similar approach with on-point curl url escaping in entry link:https://github.com/binarygolf/BGGP/issues/62[#62] (4-byte Windows Batch), by link:https://github.com/krishean[krishean]
+- this entry link:https://github.com/binarygolf/BGGP/issues/102[#102]
+- inspired by entry link:https://github.com/binarygolf/BGGP/issues/54[#54] (8-byte Windows Batch), by link:https://github.com/peterferrie[peterferrie].
+- similar approach with on-point curl url escaping in entry link:https://github.com/binarygolf/BGGP/issues/62[#62] (4-byte Windows Batch), by link:https://github.com/krishean[krishean]
