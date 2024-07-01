@@ -1,0 +1,18 @@
+= BGGP
+:Revision: 2024-07-01
+:hardbreaks:
+//:toc: center
+//:toclevels: 3
+:max-width: 94%
+
+== Binary Golf Grand Prix
+link:https://binary.golf/[Binary Golf Grand Prix] is an annual small file competition.
+
+=== BGGP5
+//tag::bggp5[]
+Theme for BGGP5 held in 2024 is link:https://binary.golf/5/[Download].
+That is, the task is to create smallest possible script or binary in particular file type category. Created app should download this link:https://binary.golf/5/5[text file] and display its contents in some way.
+//end::bggp5[]
+
+=== Entries
+link:bggp5.batch3.adoc[Windows Batch: 3 bytes, no command-line args]

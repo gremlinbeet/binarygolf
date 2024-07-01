@@ -1,0 +1,86 @@
+= BGGP5: 3-byte Windows Batch
+:Revision: 2024-07-01
+:hardbreaks:
+//:toc: center
+//:toclevels: 3
+:max-width: 94%
+
+== Binary Golf Grand Prix 5
+Binary Golf Grand Prix is an annual small file competition.
+
+include::README.adoc[tag=bggp5]
+
+
+== Windows Batch: 3 bytes, no command-line args
+For this entry I've set certain restraints for myself:
+
+* No extra command-line args.
+* No extra environment variables set beforehand.
+* Should work on 99%+ of modern Windows installations.
+
+Okay, no args and no envars, do we have any other ways to cheat? Well, yes: **filename**.
+Admittedly I've immediately got the idea after seeing entry link:https://github.com/binarygolf/BGGP/issues/54[#54] by link:https://github.com/peterferrie[peterferrie]. So here I've just refined it a bit, shrinking file size further from 8 bytes.
+
+.Entire batch file contents:
+[source,batch]
+----
+%~0
+----
+
+And that's it. Interpreting that cmd.exe just takes main argument (full filepath, `%0`), and unquotes it (that's what `~` is for). It then invokes resulting string.
+We can combine multiple batch commands using `&` symbol. So if have filepath like `C:\stuff\x & echo 1 &.bat`, interpreting `%~0` cmd.exe will attempt to exec `C:\stuff\x`, then invoke internal command `echo 1`, then exec `.bat`. Of course, running `C:\stuff\x` and `.bat` will normally fail, but we don't really care as long as in-between commands get executed.
+
+.Filename for the entry:
+----
+a&powershell -c iex(('[Net.WebClient]__new().DownloadFile(''https_--binary.golf-5-5'',[Environment]__GetFolderPath(''Startup'')+''-5.txt'');shutdown -r -t 5'-replace'_',[char]58)-replace'-',[char]47)&.bat
+----
+
+Running above batch file with this name causes following:
+
+1. cmd.exe attempts to invoke part before the filename.
+Normally path won't contain any weird commands, so that part will just fail, printing benign error message. Note path CAN contain spaces.
+
+2. cmd.exe invokes command `powershell ...` - till the `&.bat`.
+
+3. powershell.exe, being launched with `-c` argument, interprets provided command.
+First, string gets adjusted, enabling us to bypass filename limitations imposed by filesystem.
+  - char `_` replaced with `:` (0n58 == 0x3A)
+  - char `-` replaced with `/` (0n47 == 0x2F)
+
+4. powershell.exe executes adjusted string as command via `iex` alias (`Invoke-Expression`).
+That downloads file to user `Startup` folder under name `5.txt`, and then invokes shutdown.exe to reboot the system.
+
+5. cmd.exe attempts to execute `.bat`. That fails with benign error message.
+
+6. After 5 seconds system reboot is initiated.
+   Once system reboots and user logins, `5.txt` from Startup folder gets shellexecuted with associated program (e.g. notepad.exe), thus displaying file contents and fullfilling BGGP5 conditions.
+
+NOTE: Outlined approach has very useful side-effect of displaying file contents not just once, but many times (each time user logins).
+
+If you don't want to reboot you can use chicken filename variant below, which display file content only once.
+
+.Chicken filename variant (no reboot):
+----
+a&powershell -c iex(('[Net.WebClient]__new().DownloadFile(''https_--binary.golf-5-5'',$env_USERPROFILE+''-5.txt'');start $($env_USERPROFILE+''-5.txt'')'-replace'_',[char]58)-replace'-',[char]47)&.bat
+----
+
+
+=== Why powershell
+May be because it's everywhere, or may be because it's too easy. But actually there are not that many variants on how to proceed, due to filename limitations imposed by filesystem.
+
+Before publishing my entry I've seen one interesting alternative with curl in entry link:https://github.com/binarygolf/BGGP/issues/62[#62] (4-byte Windows Batch), by link:https://github.com/krishean[krishean]. It uses url-escaping; filename there is `curl -sL binary.golf --request-target 5%2f5.bat`.
+
+
+=== Limitations
+Let's observe limitation imposed by filesystems and common interpreters.
+**TBD**
+
+
+=== Bypasses
+Let's examine possible bypasses for outlined limitations. One way or another I've found them mostly non-applicable to current entry, but may be someone else will find them useful in certain situations.
+**TBD**.
+
+
+== Links
+This entry inspired by entry link:https://github.com/binarygolf/BGGP/issues/54[#54] (8-byte Windows Batch), by link:https://github.com/peterferrie[peterferrie].
+Similar approach with on-point curl url escaping in entry link:https://github.com/binarygolf/BGGP/issues/62[#62] (4-byte Windows Batch), by link:https://github.com/krishean[krishean]
