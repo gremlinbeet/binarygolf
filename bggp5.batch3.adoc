@@ -8,18 +8,22 @@
 == Binary Golf Grand Prix 5
 Binary Golf Grand Prix is an annual small file competition.
 
-include::README.adoc[tag=bggp5]
+//include::README.adoc[tag=bggp5] // wtf, github doesn't support includes; copypasta then:
+Theme for BGGP5 held in 2024 is link:https://binary.golf/5/[Download].
+That is, the task is to create smallest possible script or binary in particular file type category. Created app should download text file link:https://binary.golf/5/5[] and display its contents in some way.
 
 
 == Windows Batch: 3 bytes, no command-line args
-For this entry I've set certain restraints for myself:
+Smallest possible Windows Batch file with no _explicit_ command-line arguments, and no extra environment variables.
+
+For this entry I've self-imposed certain restraints:
 
 * No extra command-line args.
 * No extra environment variables set beforehand.
-* Should work on 99%+ of modern Windows installations.
+* Should work on 99%+ of Windows installations.
 
 Okay, no args and no envars, do we have any other ways to cheat? Well, yes: **filename**.
-Admittedly I've immediately got the idea after seeing entry link:https://github.com/binarygolf/BGGP/issues/54[#54] by link:https://github.com/peterferrie[peterferrie]. So here I've just refined it a bit, shrinking file size further from 8 bytes.
+Admittedly I've immediately got the idea after seeing entry link:https://github.com/binarygolf/BGGP/issues/54[#54] by link:https://github.com/peterferrie[peterferrie]. So I've just refined filesize a bit.
 
 .Entire batch file contents:
 [source,batch]
@@ -27,8 +31,12 @@ Admittedly I've immediately got the idea after seeing entry link:https://github.
 %~0
 ----
 
-And that's it. Interpreting that cmd.exe just takes main argument (full filepath, `%0`), and unquotes it (that's what `~` is for). It then invokes resulting string.
-We can combine multiple batch commands using `&` symbol. So if have filepath like `C:\stuff\x & echo 1 &.bat`, interpreting `%~0` cmd.exe will attempt to exec `C:\stuff\x`, then invoke internal command `echo 1`, then exec `.bat`. Of course, running `C:\stuff\x` and `.bat` will normally fail, but we don't really care as long as in-between commands get executed.
+And that's it. Seeing such sequence, cmd.exe just takes argument 0, and unquotes it (that's what `~` is for). It then interprets the resulting string.
+
+We can combine multiple batch commands using `&` symbol. So if have filepath like `C:\stuff\a & echo 1 &.bat`, interpreting `%~0` cmd.exe will attempt to exec `C:\stuff\a`, then invoke internal command `echo 1`, then exec `.bat`. Of course, running `C:\stuff\a` and `.bat` will normally fail, but we don't really care as long as in-between commands get executed.
+
+We **can't** get rid of the `~` in file contents. Removing it will impose `"` (quotation marks) around the string for the interpreter, thus it'll just fall into infinite loop of invoking same batch file, w/o doing any useful work. We could try to unquote it in filename, but we can't: if anything, ntfs/fat filesystems don't support `"` characters in filenames.
+May be someone could try bypass that via alt unicode quotes and codepage play, but I seriously doubt that.
 
 .Filename for the entry:
 ----
@@ -37,8 +45,10 @@ a&powershell -c iex(('[Net.WebClient]__new().DownloadFile(''https_--binary.golf-
 
 Running above batch file with this name causes following:
 
-1. cmd.exe attempts to invoke part before the filename.
-Normally path won't contain any weird commands, so that part will just fail, printing benign error message. Note path CAN contain spaces.
+1. cmd.exe attempts to invoke part before the first `&` symbol.
+Normally path won't contain any weird commands, so that part will just fail, printing benign error message.
+Note path CAN contain spaces.
+Also note we have `a` as first filename character. It's nothing special (almost any char do), but having it here allows to run file not just via double-click, but also via command-line in the same directory, providing quoted filename without path.
 
 2. cmd.exe invokes command `powershell ...` - till the `&.bat`.
 
@@ -73,12 +83,12 @@ Before publishing my entry I've seen one interesting alternative with curl in en
 
 === Limitations
 Let's observe limitation imposed by filesystems and common interpreters.
-**TBD**
+**WIP, TBD**
 
 
 === Bypasses
 Let's examine possible bypasses for outlined limitations. One way or another I've found them mostly non-applicable to current entry, but may be someone else will find them useful in certain situations.
-**TBD**.
+**WIP, TBD**.
 
 
 == Links
