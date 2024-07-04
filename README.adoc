@@ -17,3 +17,6 @@ That is, the task is to create smallest possible script or binary in particular 
 === Entries
 Windows batch: 3 bytes, no command-line args; entry link:https://github.com/binarygolf/BGGP/issues/102[#102].
 link:bggp5.batch3.adoc[Writeup]
+
+Powershell: 16 bytes, no command-line args; entry link:https://github.com/binarygolf/BGGP/issues/109[#109].
+link:bggp5/powershell16.adoc[Writeup]
