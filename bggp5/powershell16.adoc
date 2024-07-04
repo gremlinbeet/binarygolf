@@ -709,7 +709,7 @@ Summary for outlined powershell methods.
 |33|`Invoke-RestMethod binary.golf/5/5`|Vanilla; transparent HTTP 301 redirect from HTTP to proper HTTPS url.
 |xref:Pure 19-byte script[19]|`irm binary.golf/5/5`|Alias `irm` for `Invoke-RestMethod`.
 |**xref:Going 16 with url shorteners[16]**|**`irm rb.gy/4jch76`**|Url shortener with HTTP 301 redirect (same number of redirects as above: one).
-|[.line-through]#14#|[.line-through]`irm t.ly/5f2mv`|Javascript redirect rather than HTTP 301, so doesn't work.
+|+++<del>+++14+++</del>+++|+++<del>+++`irm t.ly/5f2mv`+++</del>+++|Javascript redirect rather than HTTP 301, so doesn't work.
 //|10|`irm t.ly/5`|considering negotiation with owner for 301 redirect
 |xref:Giving up domain name, using IP: 12 -> 11 -> 7[12]|`irm 16777216`|[16777216; 99999999], aka [0x01000000; 0x05F5E0FF], aka [1.0.0.0; 5.245.224.255]; 83222784 IPs.
 |xref:Giving up domain name, using IP: 12 -> 11 -> 7[11]|`irm 1.0.0.1`|HTTP 301 on server w/o domain name; 9*10*10*10 == 9000 IP addresses we could use.
