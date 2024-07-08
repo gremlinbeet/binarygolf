@@ -1,5 +1,5 @@
-= BGGP5: 16-byte powershell
-:Revision: 2024-07-04
+= BGGP5: 14-byte powershell
+:Revision: 2024-07-07
 :hardbreaks:
 :toc: center
 :toclevels: 3
@@ -9,93 +9,39 @@
 Binary Golf Grand Prix is an annual small file competition.
 
 //include::../README.adoc[tag=bggp5] // wtf, github doesn't support includes; copypasta then:
-Theme for BGGP5 held in 2024 is link:https://binary.golf/5/[Download].
-That is, the task is to create smallest possible script or binary in particular file type category. Created app should download text file link:https://binary.golf/5/5[] and display its contents in some way.
-
+The theme for BGGP5, held in 2024, is link:https://binary.golf/5/[Download].
+The task is to create the smallest possible script or binary in a specific file type category. The created app should download the text file link:https://binary.golf/5/5[] and display its contents in some way.
 
 == What?
-Hey, what? Just the string `binary.golf/5/5` is 15 bytes, how can entire script be just 16 bytes?
-Well, quite easy actually. In fact, you can go as low as 6 or 5 bytes, but that'll require some uncanny tweaks or hacks.
-
+Hey, what? Just the string `binary.golf/5/5` is 15 bytes. How can an entire script be just 14 bytes?
+Well, it's quite easy, actually. In fact, you can go as low as 6 or 5 bytes, but that requires some uncanny tweaks or hacks.
 
 == TLDR
-Entire script: `irm rb.gy/4jch76` (link:gremlinbeet.powershell16.ps1[download]).
-<<Summary>>.
-
+See <<Summary>>.
 
 === Restraints
-For this entry I've decided to self-impose certain restraints:
+For this entry, I've decided to self-impose certain restraints:
 
 * No extra command-line args.
   Aside from the path to the script, obviously.
 
 * No environment or environment variables changes.
-  Except possibly changing ExecutionPolicy to allow script to be run in the first place.
+  Except possibly changing ExecutionPolicy to allow the script to run in the first place.
 
 * No filepath or filename stuffing.
-  I've already employed filename stuffing in link:batch3.adoc[batch3] (entry link:https://github.com/binarygolf/BGGP/issues/102[#102]), no point repeating the same trick twice.
+  I've already employed filename stuffing in link:batch3.adoc[batch3] (entry link:https://github.com/binarygolf/BGGP/issues/102[#102]), so there's no point repeating the same trick twice.
 
-Also, it appears rules don't actually require to save content into file on disk - they just require displaying it in some way. Let's abuse that!
-
+Also, it appears the rules don't actually require saving the content to a file on disk; they just require displaying it in some way. Let's abuse that!
 
 === Powershell versions
-I'm targetting Powershell bundled with modern Windows OS (Windows 10 and Windows 11) at the time of writing (2024-07), and not other versions available for separate download and installation. That is, `$PSVersionTable.PSVersion` should be `5.1.xxx`, not 6-something. After all, it's BGGP5, not BGGP6.
-
+I'm targeting the PowerShell bundled with modern Windows OS (Windows 10 and Windows 11) at the time of writing (2024-07), not other versions available for separate download and installation. That is, `$PSVersionTable.PSVersion` should be `5.1.xxx`, not 6-something or 7-something. After all, it's BGGP5, not BGGP7.
 
 === Pre-setup
-To execute powershell script, you gotta save it in file with `.ps1` extension, and adjust execution policy to allow unsigned scripts execution. That's a step you gotta take at least once to exec any unsigned powershell scripts, there's no avoiding it.
-Execution policy adjust example: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`.
-
+To execute Powershell script, save it in a file with a .ps1 extension and adjust the execution policy to allow unsigned scripts to run. That's a step you gotta take at least once to exec any unsigned PowerShell scripts.
+Execution policy adjustment example: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`.
 
 == Analysis
-
-=== Pure 19-byte script
-
-.PS> irm binary.golf/5/5
-[%collapsible]
-====
-----
-Another #BGGP5 download!! @binarygolf https://binary.golf
- 
-
-----
-====
-
-Wow, that's very nice output. Even nicer than what you can get via other methods, such as `iwr` (Invoke-WebRequest).
-
-==== What is "irm"?
-Command `irm` is actually standard powershell alias. It stands for `Invoke-RestMethod`.
-What it does is sends an HTTP/HTTPS request to a "RESTful web service", and returns content as a string object.
-REST-style requests imply there is no state (each request should contain all necessary information).
-
-By default cmdlet `Invoke-RestMethod` uses GET method. So yeah, for our purposes here it's just a regular HTTPS request.
-
-You can get list of aliases via `Get-Alias` command, and help for a particular command/alias via `Get-Help <CommandName>`.
-
-.PS> Get-Help 'Invoke-RestMethod'
-[%collapsible]
-====
-----
-Get-Help Invoke-RestMethod
-
-NAME
-    Invoke-RestMethod
-
-SYNTAX
-    Invoke-RestMethod [-Uri] <uri> [-Method {Default | Get | Head | Post | Put | Delete | Trace | Options | Merge | Patch}]
-    [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>]
-    [-Credential <pscredential>] [-UseDefaultCredentials]
-    [-CertificateThumbprint <string>] [-Certificate <X509Certificate>]
-    [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>]
-    [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials]
-    [-Body <Object>] [-ContentType <string>]
-    [-TransferEncoding {chunked | compress | deflate | gzip | identity}]
-    [-InFile <string>] [-OutFile <string>] [-PassThru] [<CommonParameters>]
-
-ALIASES
-    irm
-----
-====
+Powershell has notoriously long cmdlet names, so if we really want to minimize size, we may have to use standard aliases.
 
 .PS> Get-Alias
 [%collapsible]
@@ -264,12 +210,14 @@ Alias           write -> Write-Output
 ----
 ====
 
+Seems like we have some suitable aliases, like `wget` and `iwr`.
 
-=== Other usable cmdlets
-One other usable cmdlet which can be immediately identified is `Invoke-WebRequest` (it has `iwr` alias).
 
-It seems more powerful than `Invoke-RestMethod`, but it's not nearly as nice. First, it returns `WebResponseObject`, which should be formatted or otherwise parsed to get proper representation of the retrieved data; while the `Invoke-RestMethod` returns just string with HTTP body instead.
-Second, under at least some Windows 10 systems command `Invoke-WebRequest` may spew Internet Explorer browser errors; the `Invoke-RestMethod` cmdlet works regardless of IE.
+=== Using `Invoke-WebRequest` (`iwr`)
+One useful cmdlet that can be immediately identified is `Invoke-WebRequest` (it has `wget` and `iwr` aliases).
+
+It seems quite powerful, but it returns a `WebResponseObject`, which should be formatted or otherwise parsed to get a proper representation of the retrieved data.
+Additionally, on some Windows 10 systems, the `Invoke-WebRequest` command may spew Internet Explorer browser errors; it's not a major issue, but it'll be nice if we could avoid that.
 
 .PS> iwr binary.golf/5/5
 [%collapsible]
@@ -299,11 +247,17 @@ RawContentLength  : 58
 ----
 ====
 
+.Invoke-WebRequest on system without Internet Explorer:
+image:img/powershell.iwr_noie.png[]
+
+.Invoke-WebRequest on regular Windows 11:
+image:img/powershell.iwr_okay.png[]
+
+
 ==== Parsing Content of WebResponse object
-Let's see how can we parse "Content" field of the "WebResponseObject" returned by `Invoke-WebRequest`. May be that'll allow us to minimize script size?
+Let's see how we can parse the "Content" field of the WebResponseObject returned by `Invoke-WebRequest`. Maybe that'll allow us to minimize script size?
 
 ===== Using "Invoke-History"
-Just something I come up with.
 
 .PS> r(iwr binary.golf/5/5)
 [%collapsible]
@@ -312,10 +266,12 @@ Just something I come up with.
 r : Cannot locate the history for command line Another #BGGP5 download!! @binarygolf https://binary.golf
 ----
 ====
-Alright, with hacky use of `r` (alias for `Invoke-History`) we got some error, but also got content of the remote file. Should be good enough. But that's 22 bytes - 3 bytes more than the simpler and more clear `irm` method.
+image:img/powershell.iwr_history.png[]
+
+Alright, with the hacky use of `r` (alias for `Invoke-History`), we got an error, but we also got content of the remote file displayed. Should be good enough. With this method, we get a 22-byte script.
 
 ===== Using `Format-Custom`
-One clever variant of formatting "WebResponseObject" is entry link:https://github.com/binarygolf/BGGP/issues/32[#32] - powershell in 22 bytes, by link:https://github.com/nephryte[nephryte]. It goes as `iwr binary.golf/5/5|fc` - pipe redirection to `fc` (alias for `Format-Custom`). It gives longass output, but definitely gets the job done.
+One clever variant of formatting "WebResponseObject" is entry link:https://github.com/binarygolf/BGGP/issues/32[#32] - 22-byte powershell script, by link:https://github.com/nephryte[nephryte]. It goes as `iwr binary.golf/5/5|fc` - pipe redirection to `fc` (alias for `Format-Custom`). It gives longass output of about 260 lines, but definitely gets the job done.
 
 .PS> iwr binary.golf/5/5|fc
 [%collapsible]
@@ -582,39 +538,124 @@ class WebResponseObject
 }
 ----
 ====
+image:img/powershell.iwr_format.png[]
+
+This again gives us 22 bytes. So it looks like 22 bytes is the minimum for the `iwr` method (with a vanilla URL).
+
+
+=== Using `Invoke-RestMethod` (`irm`)
+Another seemingly suitable cmdlet is `Invoke-RestMethod`, with the short alias `irm`.
+It sends an HTTP/HTTPS request to a "RESTful web service" and returns the content as a string object. REST-style requests imply there is no state (each request should contain all necessary information).
+
+
+.PS> Get-Help 'Invoke-RestMethod'
+[%collapsible]
+====
+----
+Get-Help Invoke-RestMethod
+
+NAME
+    Invoke-RestMethod
+
+SYNTAX
+    Invoke-RestMethod [-Uri] <uri> [-Method {Default | Get | Head | Post | Put | Delete | Trace | Options | Merge | Patch}]
+    [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>]
+    [-Credential <pscredential>] [-UseDefaultCredentials]
+    [-CertificateThumbprint <string>] [-Certificate <X509Certificate>]
+    [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>]
+    [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials]
+    [-Body <Object>] [-ContentType <string>]
+    [-TransferEncoding {chunked | compress | deflate | gzip | identity}]
+    [-InFile <string>] [-OutFile <string>] [-PassThru] [<CommonParameters>]
+
+ALIASES
+    irm
+----
+====
+
+By default, the cmdlet `Invoke-RestMethod` uses the GET method. So yeah, for our purposes here, it's just a regular HTTPS request.
+While it's less powerful than `Invoke-WebRequest`, it's exactly what we want: it returns the response body as a string (rather than a WebResponseObject), and it's available even without Internet Explorer.
+
+.PS> irm binary.golf/5/5
+[%collapsible]
+====
+----
+Another #BGGP5 download!! @binarygolf https://binary.golf
+----
+====
+image:img/powershell.irm_vanilla.png[]
+
+This gets us down to a 19-byte script.
 
 
 === Making it smaller
-Without filepath and filename stuffing tricks, without extra command-line args and environment variables, we're quite limited in what we can do to reduce the size further. I mean, just look at the 19-byte script `irm binary.golf/5/5` - the longest part here is the url, taking 15 bytes.
+Without filepath and filename stuffing tricks, extra command-line args, and environment variables, we're quite limited in what we can do to reduce the size further. I mean, just look at the 19-byte script `irm binary.golf/5/5` - the longest part here is the URL, taking 15 bytes.
 So what can we do? Shorten the URL!
 
-The thing is, `Invoke-RestMethod` cmdlet follows HTTP redirects. So when server returns HTTP code 301, cmdlet will follow to the specified new location, transparently to the client.
+We can do that because the `Invoke-RestMethod` cmdlet follows HTTP redirects. When the server returns HTTP code 301 and a new location, the cmdlet will just transparently follow it. The same is true for the `Invoke-WebRequest` cmdlet.
+Suitable HTTP codes are 301, 302, and 307. While HTTP 308 - Permanent Redirect - seems suitable too, it is not. The aforementioned cmdlets don't like it and spew errors.
 
 
-==== Is it even legal?
-But is it legal to rely on 3rd-party servers or services for the purpose of competition? Well, I'm pretty sure it is, as long as the entry can be independently validated with high enough reliability. Reasons for that:
+==== Is shortening even legal?
+But is it legal to rely on third-party servers or services for the purpose of competition? Well, I'm pretty sure it is, as long as the entry can be independently validated with high enough reliability. Reasons for that:
 
-1. As you're well aware, Internet is a series of tubes. So even a regular request would already go through multiple 3rd-party tube hubs (run `tracert binary.golf` to see just part of it!). This means adding a few more hops in a higher-level protocol should not matter.
+1. As you're well aware, the Internet is a series of tubes. So even a regular request would already go through multiple third-party tube hubs (run `tracert binary.golf` to see just part of it!). This means adding a few more hops in a higher-level protocol should not matter.
 
-2. There are kind of entries where HTTP redirects can't be used, or where using them would involve serious size overhead. So if HTTP redirect can be abused for particular filetype entry, it should be!
+2. There are kinds of entries where HTTP redirects can't be used, or where using them would involve serious size overhead. So if an HTTP redirect can be abused for a particular filetype entry, it should be!
 
-3. This competition has extremely open nature. So any outlined technique can be immediately reused by other participants. This means it's fair, as there can't be any hidden edge.
+3. This competition has an extremely open nature. So any outlined technique can be immediately reused by other participants. This means it's fair, as there can't be any hidden edge.
 
-4. Finally, some accepted entries already use HTTP redirects. Even `iwr binary.golf/5/5` or `irm binary.golf/5/5` use HTTP redirect, as powershell attempts to use unencrypted HTTP first, and then follows 301 redirect to HTTPS.
+4. Finally, some accepted entries already use HTTP redirects. Even a vanilla request like `curl -sL binary.golf/5/5` already does it - it proceeds via unencrypted HTTP first, and only then follows the 301 redirect to the proper HTTPS URL.
+
+.Redirect to HTTPS you get for `curl -sL binary.golf/5/5`:
+image:img/http_redirect.png[]
 
 
-==== Going 16 with url shorteners
-We can go from **19** bytes to **16** via public url shortening services.
-However, such service should perform redirect via code in HTTP header, and not via javascript in the served page.
-Without further ado: `irm rb.gy/4jch76`. This 16-byte powershell script uses rb.gy free URL shortener service to transparently redirect request to https://binary.golf/5/5, via HTTP 301 response. As if clean http header redirection wasn't nice enough, this service also allows to check number of link clicks: simple append `+` to the link:rb.gy/4jch76+[url] to check clicks count and other stats.
+==== Going with URL shorteners
+We can reduce the size from **19** bytes to **14** or less with public URL shortening services.
+
+Requirements for the service:
+
+* Clean HTTP header redirect via codes 301, 302, or 307 (not 308, as Powershell doesn't like it).
+  Many services use a landing page with JavaScript or manual confirmation. We can't use these.
+* Should support unencrypted HTTP requests (as `irm` uses plain HTTP when the URL is specified without a protocol).
+  Some services - such as "s.id" - use code 302 for HTTPS requests, but code 308 when the request comes via plain HTTP.
+* Service should allow Powershell useragent.
+  Some services - e.g. "e.vg" - ban such user agents.
+
+Without further ado: `irm rb.gy/4jch76`. This 16-byte Powershell script uses the rb.gy free URL shortener service to transparently redirect the request to https://binary.golf/5/5, via an HTTP 301 response. As if clean HTTP header redirection wasn't nice enough, this service also allows checking the number of link clicks: simply append `+` to the link:rb.gy/4jch76+[URL] to check clicks count and other stats.
 
 NOTE: link:https://rb.gy[RB.GY] definitely didn't pay me 0.55555 BTC for this shoutout.
 
+Other services I've checked:
+`irm u.to/fpXDIA` - HTTP 302 redirect, 15 bytes.
+`irm is.gd/_555_` - HTTP 301 redirect, 15 bytes (allows custom url).
+`irm x.gd/EqI87` - HTTP 301 redirect, 14 bytes.
+
+.Going 14 with `irm x.gd/EqI87`:
+image:img/powershell.irm_shorter_xgd.png[]
+
+===== URL shorteners: results
+With public shorteners, you can get to **14** bytes right now, or to **10** if you manage to get a very short URL like `x.gd/5`.
+
+
+==== Registering own domain: 9 bytes
+Why depend on a third-party service when we can register our own domain? That way, we won't have to provide an extra URL path.
+Well, no reason really. It might be too late to register a 3-letter domain, but a 4-letter domain like link:https://www.youtube.com/watch?v=dQw4w9WgXcQ[nr.pw] will only set us back about $150.
+
+There's also a special trick that can save us some buck. Powershell has a special variable `$?`, which contains either "true" or "false" ("false" if the last operation resulted in an error). When a Powershell script starts, there is no last operation, so the variable contains "true". So we can go for a "true.xx" domain, and use `irm $?.xx` in the script.
+
+`irm nr.pw` - 9 bytes (won't work though, as I have not actually registered this domain).
+`irm $?.pw` - 9 bytes, resolves to "true.pw".
+
+===== Own domain name: results
+With your own domain name, you can realistically get to a **9**-byte Powershell script. If you somehow get or hack a 3-letter domain like "t.co", you'll get an **8**-byte script.
+
 
 ==== Giving up domain name, using IP: 12 -> 11 -> 7
-We don't have to use domain name for HTTP request. We can use just IP address. If server to return code 301 redirect, we won't have to provide extra url path either.
+We don't have to use a domain name for an HTTP request. We can use a plain IP address.
 
-How can we specify IPv4 address for "Invoke-RestMethod" (or browser):
+How can we specify an IPv4 address for "Invoke-RestMethod" (or browser):
 
 * Regular IP address, e.g. `irm 1.0.0.1`.
   The minimum filesize for this notation is **11** bytes. We have exactly 9*10*10*10 == 9000 IP addresses suitable for minimum size.
@@ -622,24 +663,27 @@ How can we specify IPv4 address for "Invoke-RestMethod" (or browser):
 * Plain number IP address, e.g. `irm 16777217`, equivalent to `irm 0x1000001`.
   The left-most digit from dotted notation goes to the most significant byte of the plain number.
   The minimum filesize is **12** bytes (for decimal notation, as hex notation gives 13 bytes).
-  Min-size range is [16777216; 99999999], aka [0x01000000; 0x05F5E0FF], aka [1.0.0.0; 5.245.224.255]. That's 83222784 IPs.
+  Min-size range is [16777216; 99999999], aka [0x01000000; 0x05F5E0FF], aka [1.0.0.0; 5.245.224.255]. That's 83,222,784 IPs.
 
 * Skip-zero IP address, e.g. `irm 1.1`. It's effectively the same as `irm 1.0.0.1`, but shorter.
-  Slightly longer variant is `irm 1.1.1`, which is the same as `irm 1.1.0.1`.
-  The minimum filesize is **7** bytes, but there's only 9×10 == 90 IP addresses we can hack to install our redirect.
-  With 2 zeroes skipped in the middle can also go for **8** bytes with `irm 10.1`/`irm 1.10` (90×10+9×90 == 1710 IPs), or for **9** bytes `irm 100.1`/`irm 1.100` (about 155×10+9×155 == 2945 IPs).
-  The longer **9**-byte variant with single skipped zero allows for 9×9×10 == 810 IP addresses (I'm not counting the 90 IP which we can represent with 2 dot-separated digits).
+  A slightly longer variant is `irm 1.1.1`, which is the same as `irm 1.1.0.1`.
+  The minimum filesize is **7** bytes, but there are only 9×10 == 90 IP addresses we can hack to install our redirect.
+  With 2 zeroes skipped in the middle, we can also go for **8** bytes with `irm 10.1`/`irm 1.10` (90×10+9×90 == 1710 IPs), or for **9** bytes with `irm 100.1`/`irm 1.100` (about 155×10+9×155 == 2945 IPs).
+  The longer **9**-byte variant with a single skipped zero allows for 9×9×10 == 810 IP addresses (I'm not counting the 90 IPs which we can represent with 2 dot-separated digits).
+
+===== Using IPs: results
+With plain IPv4, you may get as low as **7** bytes, but that's a bit unrealistic. An 8 or 9-byte Powershell script looks more probable, but still, the most likely outcome is **12** bytes.
 
 
-==== Reverting to domain name: 7 -> 6
-There is a concept of link:https://lab.avl.la/dotless/[dotless domain names]. Basically it's top-level domain names.
-Currently not many of them resolve, and there seems to be issues with tls certs (but that doesn't matter, as we only need them to return HTTP code 301 redirect).
-The minimum TLD length is currently 2 bytes. However, 1-byte TLD might be introduced in the future, as there doesn't seem to be any serious technical issues. At least nothing prevents attempts to resolve such domains on my systems.
+==== Back to domain name: 7 -> 6
+There is a concept of link:https://lab.avl.la/dotless/[dotless domain names]. Basically, it's just top-level domain names.
+Currently, not many of them resolve, and there seem to be issues with TLS certs (but the latter doesn't really matter, as we actually do plain HTTP requests).
+The minimum TLD length is currently 2 bytes. However, a 1-byte TLD might be introduced in the future, as there don't seem to be any serious technical issues. At least nothing prevents attempts to resolve such domains on my systems.
 
-To use dotless domain names you have to use a dot. 😂
-Without trailing dot, Powershell (and most Windows components) would append connection-specific DNS suffix to the provided name (e.g. `.local`), and request would not normally go any further than local DNS server. To check suffix, use `Get-DnsClient` cmdlent and examine "ConnectionSpecificSuffix" column.
+To use dotless domain names, you have to specify a dot. 😂
+Without a trailing dot, Powershell (and most Windows components) would append a connection-specific DNS suffix to the provided name (e.g. `.local`), and the request would not normally go any further than the local DNS server. To check the suffix, use the `Get-DnsClient` cmdlet and examine the "ConnectionSpecificSuffix" column.
 
-Let's check what can we get from the `ai` dotless domain (keep trailing dot).
+Let's check what we can get from the `ai` dotless domain (keep the trailing dot).
 
 .PS> irm ai.
 [%collapsible]
@@ -667,23 +711,27 @@ go to one of these sites:
 ----
 ====
 
-So yeah, that works. If you hack one of 2-letter TLD domains, you can get **7**-byte powershell entry.
-But why stop at 2-letter TLD? We can shrink filesize to **6** bytes if root DNS servers were to resolve 1-letter TLD. If you're going to hijack DNS, I recommend to hackregister TLD "5". This way 6-byte script would be: `irm 5.`
+So yeah, that works. If you hack one of the 2-letter TLD domains, you can get a **7**-byte Powershell entry.
+
+But why stop at 2-letter TLD? We can shrink the filesize to **6** bytes if the root DNS servers were to resolve a 1-letter TLD. If you're going to hijack DNS, I recommend hacking the TLD "5". This way, a 6-byte script would be: `irm 5.`
 
 NOTE: Hijacking root DNS servers is left as an exercise for the reader.
 
+===== Domain names take2: results
+If you hack one of the dotless 2-letter domains, you can get a **7**-byte script. If you hijack root DNS servers and get yourself a 1-letter domain, you can probably win this with a **6**-byte script.
+
 
 ==== Going 5
-It would be nice to have 5-byte powershell script for BGGP5. However, currently it doesn't seem to be possible on the global scale (if we stick to the self-imposed <<Restraints>>). That's because one-letter domains without dot get connection-specific suffix from local DNS server, and to my knowledge these servers won't propagate such requests further.
+It would be nice to have a 5-byte Powershell script for BGGP5. However, currently it doesn't seem to be possible on a global scale (if we stick to the self-imposed <<Restraints>>). That's because one-letter domains without a dot get a connection-specific suffix from the local DNS server, and to my knowledge, these servers won't propagate such requests further.
 
-NOTE: To check connection-specific DNS suffix, use `Get-DnsClient` cmdlent and examine "ConnectionSpecificSuffix" column. E.g. if you have "loc" there, then attempt to exec `irm g` will send DNS request for the `g.loc` domain name.
+NOTE: To check the connection-specific DNS suffix, use `Get-DnsClient` cmdlet and examine the "ConnectionSpecificSuffix" column. E.g., if you have "loc" there, then attempting to execute `irm g` will send a DNS request for the `g.loc` domain name.
 
-We can still check out concept of 1-letter domain name locally. Just follow these steps:
+We can still check out the concept of a 1-letter domain name locally. Just follow these steps:
 
 1. Edit your hosts. E.g. on Windows exec the following from cmd.exe with Administrative privileges:
 `(echo.&echo 127.0.0.1 g)>>%windir%\system32\drivers\etc\hosts`
 
-2. Start python 3 interpreter and paste following text into it to start HTTP redirection server.
+2. Start a Python 3 interpreter and paste the following text into it to start an HTTP redirection server:
 +
 [source, python]
 ----
@@ -696,39 +744,39 @@ http.server.HTTPServer(('', 80), type('', (http.server.BaseHTTPRequestHandler,),
 })).serve_forever()
 ----
 +
-3. Run powershell script with contents `irm g`.
-That'll connect to the localhost and will be _transparently_ redirected to the proper url, retrieving and displaying downloaded content.
+3. Run Powershell command `irm g`.
+That'll connect to localhost and will be _transparently_ redirected to the proper URL, retrieving and displaying downloaded content.
 
-And that's it: idea of **5**-byte powershell script is live, even though I still consider 6-byte script the minimal global coverage powershell solution with given <<Restraints>>.
+===== Going 5: results
+Even though we've shown a **5**-byte Powershell script works, it's not a global solution.
 
 
 == Summary
-Summary for outlined powershell methods.
+Summary for the outlined Powershell methods.
 
 [cols="1,8,28"]
 |===
 |Script size |Code | Comment
 
-|33|`Invoke-RestMethod binary.golf/5/5`|Vanilla; transparent HTTP 301 redirect from HTTP to proper HTTPS url.
-|xref:Pure 19-byte script[19]|`irm binary.golf/5/5`|Alias `irm` for `Invoke-RestMethod`.
-|**xref:Going 16 with url shorteners[16]**|**`irm rb.gy/4jch76`**|Url shortener with HTTP 301 redirect (same number of redirects as above: one).
-|+++<del>+++14+++</del>+++|+++<del>+++`irm t.ly/5f2mv`+++</del>+++|Javascript redirect rather than HTTP 301, so doesn't work.
-//|10|`irm t.ly/5`|considering negotiation with owner for 301 redirect
-|xref:Giving up domain name, using IP: 12 -> 11 -> 7[12]|`irm 16777216`|[16777216; 99999999], aka [0x01000000; 0x05F5E0FF], aka [1.0.0.0; 5.245.224.255]; 83222784 IPs.
-|xref:Giving up domain name, using IP: 12 -> 11 -> 7[11]|`irm 1.0.0.1`|HTTP 301 on server w/o domain name; 9×10×10×10 == 9000 IP addresses we could use.
+|xref:Using `Invoke-RestMethod` (`irm`)[33]|`Invoke-RestMethod binary.golf/5/5`|Vanilla; transparent HTTP 301 redirect from HTTP to proper HTTPS URL.
+|xref:Using `Invoke-RestMethod` (`irm`)[19]|`irm binary.golf/5/5`|Alias `irm` for `Invoke-RestMethod`.
+|**xref:Going with URL shorteners[14]**|**`irm x.gd/EqI87`**|URL shortener with HTTP 301 redirect (same number of redirects as above: one).
+|xref:Giving up domain name, using IP: 12 -> 11 -> 7[12]|`irm 16777216`|[16777216; 99999999], aka [0x01000000; 0x05F5E0FF], aka [1.0.0.0; 5.245.224.255]; 83,222,784 IPs.
+|xref:Giving up domain name, using IP: 12 -> 11 -> 7[11]|`irm 1.0.0.1`|HTTP 301 on server without domain name; 9×10×10×10 == 9000 IP addresses we could use.
+|xref:Giving up domain name, using IP: 12 -> 11 -> 7[09]|`irm 100.1`/`irm 1.100`|Two zeroes in the middle ignored (100.1 == 100.0.0.1); about 155×10+9×155 == 2945 IPs.
+|xref:Giving up domain name, using IP: 12 -> 11 -> 7[09]|`irm 1.1.1`|Same as 1.1.0.1, zero ignored; 9×9×10 == 810 IP addresses we could use.
+|xref:Giving up domain name, using IP: 12 -> 11 -> 7[08]|`irm 10.1`/`irm 1.10`|Two zeroes in the middle ignored; 90×10+9×90 == 1710 IPs.
 |xref:Giving up domain name, using IP: 12 -> 11 -> 7[07]|`irm 1.1`|Same as 1.0.0.1, zeroes ignored; 9×10 == 90 IP addresses we could use.
-|xref:Giving up domain name, using IP: 12 -> 11 -> 7[08]|`irm 10.1`/`irm 1.10`|Like just above, 2 zeroes in the middle ignored; 90×10+9×90 == 1710 IPs.
-|xref:Giving up domain name, using IP: 12 -> 11 -> 7[09]|`irm 100.1`/`irm 1.100`|Like just above, 2 zeroes in the middle ignored; about 155×10+9×155 == 2945 IPs.
-|xref:Giving up domain name, using IP: 12 -> 11 -> 7[09]|`irm 1.1.1`|Same as 1.1.0.1, zero ignored; 9×9×10 == 810 ip addresses we could use.
-|xref:Reverting to domain name: 7 -> 6[07]|`irm ai.`|Or other 2-letter domains; gotta hack them first to set up 301 redirect though.
-|xref:Reverting to domain name: 7 -> 6[06]|`irm g.`|Just need to hack root DNS servers for this to work.
-|xref:Going 5[05]|`irm g`|Seems to be local-only.
+|xref:Back to domain name: 7 -> 6[07]|`irm ai.`|Or other 2-letter domains; gotta hack them first to set up 301 redirect though.
+|xref:Back to domain name: 7 -> 6[06]|`irm g.`|Just need to hack root DNS servers for this to work.
+|xref:Going 5[05]|`irm g`|Seems to be a local-only solution.
 |===
 
 
 == Links
-- Download link:gremlinbeet.powershell16.ps1[powershell16.ps1]
+- Download link:gremlinbeet.powershell14.ps1[powershell14.ps1]
 - This entry link:https://github.com/binarygolf/BGGP/issues/109[#109] in BGGP repo
-- Interesting entry link:https://github.com/binarygolf/BGGP/issues/32[#32] by link:https://github.com/nephryte[nephryte] - powershell 22 bytes, via `iwr|fc`
-- link:https://rb.gy[RB.GY] free url shortening service
+- Interesting entry link:https://github.com/binarygolf/BGGP/issues/32[#32] by link:https://github.com/nephryte[nephryte] - 22-byte Powershell script, via `iwr|fc`
 - link:https://lab.avl.la/dotless/[Dotless domains]
+- link:https://rb.gy[RB.GY] free URL shortening service
+- link:https://x.gd[x.gd] free URL shortening service
