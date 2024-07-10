@@ -16,7 +16,7 @@ The task is to create the smallest possible script or binary in a specific file 
 Hey, what? Just the string `binary.golf/5/5` is 15 bytes. How can an entire script be just 14 bytes?
 Well, it's quite easy, actually. In fact, you can go as low as 6 or 5 bytes, but that requires some uncanny tweaks or hacks.
 
-== TLDR
+=== TLDR
 See <<Summary>>.
 
 === Restraints
